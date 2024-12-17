@@ -1,86 +1,49 @@
-import React from 'react';
-
-function getRandomName(): string {
-  const newRandomName = Date.now().toString().slice(-4);
-
-  return `Clock-${newRandomName}`;
-}
-
-function getCurrentTime(): string {
-  const now = new Date();
-  let hours = now.getHours();
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const seconds = now.getSeconds().toString().padStart(2, '0');
-  const partOfDay = hours >= 12 ? 'PM' : 'AM';
-
-  hours = hours % 12;
-  hours = hours || 12;
-
-  return `${hours}:${minutes}:${seconds} ${partOfDay}`;
-}
-
-type ClockState = {
-  currentTime: string;
-  clockName: string;
+import { Component } from 'react';
+type Props = {
+  name: string;
 };
-
-type ClockProps = {
-  onHide: () => void;
+type State = {
+  today: Date;
 };
-
-export class Clock extends React.Component<ClockProps, ClockState> {
-  timerId: number | undefined;
-
-  secondsId: number | undefined;
-
-  state: ClockState = {
-    currentTime: getCurrentTime(),
-    clockName: 'Clock-0',
+export class Clock extends Component<Props, State> {
+  state: Readonly<State> = {
+    today: new Date(),
   };
 
-  componentDidMount(): void {
-    this.timerId = window.setInterval(() => {
-      this.setState({
-        clockName: getRandomName(),
+  todayId = 0;
+
+  componentDidMount() {
+    this.todayId = window.setInterval(() => {
+      this.setState({ today: new Date() }, () => {
+        // eslint-disable-next-line no-console
+        console.log(this.state.today.toUTCString().slice(-12, -4));
       });
-    }, 3300);
-
-    this.secondsId = window.setInterval(() => {
-      const currentTime = getCurrentTime();
-
-      this.setState({ currentTime });
-      // eslint-disable-next-line no-console
-      console.log(currentTime);
     }, 1000);
   }
 
-  componentWillUnmount(): void {
-    if (this.timerId) {
-      window.clearInterval(this.timerId);
-    }
+  componentDidUpdate(prevProps: Readonly<Props>) {
+    const { name } = this.props;
 
-    if (this.secondsId) {
-      window.clearInterval(this.secondsId);
+    if (prevProps.name !== name) {
+      // eslint-disable-next-line no-console
+      console.warn(`Renamed from ${prevProps.name} to ${name}`);
     }
   }
 
-  componentDidUpdate(prevProps: ClockProps, prevState: ClockState): void {
-    if (prevState.clockName !== this.state.clockName) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `Renamed from ${prevState.clockName} to ${this.state.clockName}`,
-      );
-    }
+  componentWillUnmount() {
+    window.clearInterval(this.todayId);
   }
 
   render() {
-    const { currentTime, clockName } = this.state;
+    const { today } = this.state;
 
     return (
       <div className="Clock">
-        <strong className="Clock__name">{clockName}</strong>
+        <strong className="Clock__name">{this.props.name}</strong>
         {' time is '}
-        <span className="Clock_time">{currentTime}</span>
+        <span className="Clock__time">
+          {today.toUTCString().slice(-12, -4)}
+        </span>
       </div>
     );
   }
