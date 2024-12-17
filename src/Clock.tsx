@@ -6,6 +6,19 @@ function getRandomName(): string {
   return `Clock-${newRandomName}`;
 }
 
+function getCurrentTime(): string {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  const partOfDay = hours >= 12 ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  hours = hours || 12;
+
+  return `${hours}:${minutes}:${seconds} ${partOfDay}`;
+}
+
 type ClockState = {
   currentTime: string;
   clockName: string;
@@ -21,7 +34,7 @@ export class Clock extends React.Component<ClockProps, ClockState> {
   secondsId: number | undefined;
 
   state: ClockState = {
-    currentTime: new Date().toUTCString().slice(-12, -4),
+    currentTime: getCurrentTime(),
     clockName: 'Clock-0',
   };
 
@@ -33,7 +46,7 @@ export class Clock extends React.Component<ClockProps, ClockState> {
     }, 3300);
 
     this.secondsId = window.setInterval(() => {
-      const currentTime = new Date().toUTCString().slice(-12, -4);
+      const currentTime = getCurrentTime();
 
       this.setState({ currentTime });
       // eslint-disable-next-line no-console
@@ -54,7 +67,7 @@ export class Clock extends React.Component<ClockProps, ClockState> {
   componentDidUpdate(prevProps: ClockProps, prevState: ClockState): void {
     if (prevState.clockName !== this.state.clockName) {
       // eslint-disable-next-line no-console
-      console.warn(
+      console.log(
         `Renamed from ${prevState.clockName} to ${this.state.clockName}`,
       );
     }
